@@ -172,6 +172,11 @@ functions:
 resources:
   Resources:
 
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: forms-builder-fields-bucket
+
     FormsBuilderTable:
       Type: AWS::DynamoDB::Table
       Properties:
