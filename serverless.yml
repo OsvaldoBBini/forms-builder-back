@@ -169,6 +169,27 @@ functions:
           authorizer: 
             name: CognitoAuthorizer
 
+  create-form-service:
+    handler: src/infra/use-cases/forms/createForm/createForm.handler
+    events:
+      - httpApi:
+          path: /forms
+          method: POST
+          authorizer: 
+            name: CognitoAuthorizer
+    environment:
+      FIELDS_BUCKET: !Ref S3Bucket
+
+  get-forms-service:
+    handler: src/infra/use-cases/forms/getForms/getForms.handler
+    events:
+      - httpApi:
+          path: /forms
+          method: GET
+          authorizer: 
+            name: CognitoAuthorizer
+
+
 resources:
   Resources:
 

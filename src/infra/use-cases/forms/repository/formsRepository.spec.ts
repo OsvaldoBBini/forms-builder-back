@@ -16,7 +16,7 @@ describe('FormsRepository', () => {
 
   beforeEach(() => {
     dbMock.reset();
-    process.env.BUCKET_NAME = 'test-bucket';
+    process.env.FIELDS_BUCKET = 'test-bucket';
     repository = new FormsRepository(dynamoGateway);
   });
 
@@ -84,7 +84,7 @@ describe('FormsRepository', () => {
           formName: 'Lead Form',
           formId,
           createdAt: expect.any(String),
-          fieldsAddress: `${process.env.BUCKET_NAME}/${companyId}/fields/${formId}`
+          fieldsAddress: `${process.env.FIELDS_BUCKET}/${companyId}/fields/${formId}`
         })
       );
     });

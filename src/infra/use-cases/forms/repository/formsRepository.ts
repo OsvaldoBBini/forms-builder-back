@@ -7,9 +7,11 @@ import { formatDate } from '../../../utils/formatDate';
 export class FormsRepository implements FormRepositoryInterface {
 
   private dbGateway: DatabaseGatewayInterface;
+  private readonly bucketName: string ;
 
   constructor(dbGateway: DatabaseGatewayInterface) {
     this.dbGateway = dbGateway;
+    this.bucketName = process.env.FIELDS_BUCKET || '';
   }
 
   private mapFormData(persistenceData: FormPersistenceInterface): FormDomainInterface {
@@ -43,7 +45,7 @@ export class FormsRepository implements FormRepositoryInterface {
       ...formData,
       formId: formId,
       createdAt: formatDate(new Date()),
-      fieldsAddress: `${process.env.BUCKET_NAME}/${formData.companyId}/fields/${formId}`
+      fieldsAddress: `${this.bucketName}/${formData.companyId}/fields/${formId}`
     });
     await dbClient.send(command);
 
