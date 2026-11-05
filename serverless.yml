@@ -3,7 +3,7 @@ service: formsbuilder
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs24.x
   architecture: arm64
   memorySize: 128
   iam:
