@@ -1,5 +1,6 @@
 import { CompanyDomainInterface, CompanyInterface } from './company';
 
 export interface CompanyRepositoryInterface {
-  createCompany(companyData: CompanyInterface): Promise<CompanyDomainInterface>;
+  putCompany(companyData: CompanyInterface): Promise<CompanyDomainInterface>;
+  getCompaniesByUserId(userId: string): Promise<CompanyDomainInterface[] | null>;
 }

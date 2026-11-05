@@ -1,65 +1,88 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DatabaseGatewayInterface } from '.';
 
-export interface DatabaseGatewayInterface {
-  dbClient: DynamoDBDocumentClient;
-  queryCommand: (item: QueryCommandInputInterface) => QueryCommand;
-  getCommand: (item: GetCommandInputInterface) => GetCommand;
-  putCommand: (item: Record<string, any> | undefined) => PutCommand;
-  updateCommand: (key: { PK: string; SK?: string }, updateValues: Record<string, any>) => UpdateCommand;
+type filterType = 'begins_with' | 'contains' | 'equals';
+
+export interface QueryFilters {
+  partitionKey: string;
+  sortKey?: string;
+  filterType?: filterType;
 }
 
-interface GetCommandInputInterface {
-  Key: {
-    PK: string;
-    SK?: string;
-  }
-}
+export class DynamoGateway implements DatabaseGatewayInterface<QueryFilters> {
+  private readonly dbClient: DynamoDBDocumentClient;
+  private readonly tableName: string;
 
-interface QueryCommandInputInterface {
-  KeyConditionExpression: string;
-  ExpressionAttributeValues?: Record<string, any> | undefined
-}
-
-export class DynamoGateway implements DatabaseGatewayInterface {
-  public dbClient: DynamoDBDocumentClient;
-  private tableName: string;
-
-  constructor() {
+  constructor(tableName: string) {
     const client = new DynamoDBClient({ region: 'us-east-1' });
-    this.tableName = 'FormsBuilderTable';
     this.dbClient = DynamoDBDocumentClient.from(client);
+    this.tableName = tableName;
   }
 
-  public queryCommand = (item: QueryCommandInputInterface) => new QueryCommand({
-    TableName: this.tableName,
-    ...item
-  });
+  private defineFilterExpression(filterType: filterType) {
+    const filterExpressions: Record<filterType, string> = {
+      'begins_with': 'AND begins_with(SK, :sk)',
+      'contains': 'AND contains(SK, :sk)',
+      'equals': 'AND SK = :sk'
+    };
+    return filterExpressions[filterType];
+  }
 
-  public getCommand = (item: GetCommandInputInterface) => new GetCommand({
-    TableName: this.tableName,
-    ...item
-  });
+  public async query<T>(filters: QueryFilters): Promise<T[]> {
+    let KeyConditionExpression = 'PK = :pk';
+    const ExpressionAttributeValues: Record<string, any> = { ':pk': filters.partitionKey };
 
-  public putCommand = (item: Record<string, any> | undefined) => new PutCommand({
-    TableName: this.tableName,
-    Item: { ...item }
-  });
+    if (filters.sortKey) {
+      KeyConditionExpression += ` ${this.defineFilterExpression(filters.filterType || 'equals')}`;
+      ExpressionAttributeValues[':sk'] = filters.sortKey;
+    }
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression,
+      ExpressionAttributeValues,
+    });
+
+    const response = await this.dbClient.send(command);
+    return (response.Items || []) as T[];
+  }
+
+  public async get<T>(partitionKey: string, sortKey?: string): Promise<T | null> {
+    const command = new GetCommand({
+      TableName: this.tableName,
+      Key: { PK: partitionKey, SK: sortKey },
+    });
+
+    const response = await this.dbClient.send(command);
+    return (response.Item as T) || null;
+  }
+
+  public async put<T extends Record<string, any>>(item: T): Promise<void> {
+    const command = new PutCommand({
+      TableName: this.tableName,
+      Item: item,
+    });
+
+    await this.dbClient.send(command);
+  }
 
   private updateExpression = (keys: string[]) => `SET ${keys.map((k) => `#${k} = :${k}`).join(', ')}`;
   private expressionAttributeNames = (keys: string[]) => keys.reduce((acc, k) => ({ ...acc, [`#${k}`]: k }), {});
   private expressionAttributeValues = (keys: string[], updates: Record<string, any>) => keys.reduce((acc, k) => ({ ...acc, [`:${k}`]: updates[k] }), {});
-
-  public updateCommand = (key: { PK: string; SK?: string }, updateValues: Record<string, any>) => new UpdateCommand(
-    {
+  
+  public async update<T>(keys: { pk: string; sk?: string }, updateValues: Partial<T>): Promise<void> {
+    const command = new UpdateCommand({
       TableName: this.tableName,
-      Key: key,
+      Key: { PK: keys.pk, SK: keys.sk },
       UpdateExpression: this.updateExpression(Object.keys(updateValues)),
       ExpressionAttributeNames: this.expressionAttributeNames(Object.keys(updateValues)),
       ExpressionAttributeValues: this.expressionAttributeValues(Object.keys(updateValues), updateValues)
-    }
-  );
+    });
+
+    await this.dbClient.send(command);
+  }
 }
 
-export const dynamoGateway = new DynamoGateway();
+export const databaseGateway = new DynamoGateway('FormsBuilderTable');

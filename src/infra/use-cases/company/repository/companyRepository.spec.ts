@@ -1,169 +1,97 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { mockClient } from 'aws-sdk-client-mock';
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { dynamoGateway } from '../../../adapters/database/dynamo';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CompanyRepository } from './companyRepository';
 import { CompanyInterface } from '../../../domain/entities/company/company';
 
-const dbMock = mockClient(DynamoDBDocumentClient);
-
 describe('CompanyRepository', () => {
+  const mockUserId = 'user123';
+  const mockDbGateway = {
+    query: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    update: vi.fn(),
+  };
 
   let repository: CompanyRepository;
-  const mockUserId = 'user123';
 
   beforeEach(() => {
-    dbMock.reset();
-    repository = new CompanyRepository(dynamoGateway);
+    vi.clearAllMocks();
+    repository = new CompanyRepository(mockDbGateway as any);
   });
 
-  describe('createCompany', () => {
+  it('should store a company and return it with a generated companyId', async () => {
+    const companyData: CompanyInterface = {
+      cnpj: '11111111000191',
+      userId: mockUserId,
+      companyName: 'Test Company',
+      role: 'owner',
+      isDefault: true,
+    };
 
-    it('should store company successfully', async () => {
-  
-      const companyData: CompanyInterface = {
-        cnpj: '11111111000191', 
-        userId: mockUserId,
-        companyName: 'Test Company',
+    mockDbGateway.put.mockResolvedValueOnce(undefined);
+
+    const createdCompany = await repository.putCompany(companyData);
+
+    expect(createdCompany.companyId).toBeTruthy();
+    expect(createdCompany.userId).toBe(mockUserId);
+    expect(createdCompany.companyName).toBe('Test Company');
+    expect(mockDbGateway.put).toHaveBeenCalledWith(
+      expect.objectContaining({
+        PK: `USER#${mockUserId}`,
+        SK: expect.stringMatching(/^COMPANY#.+$/),
+        companyId: createdCompany.companyId,
+        cnpj: '11111111000191',
         role: 'owner',
-        isDefault: true
-      };
-    
-      dbMock.on(PutCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
-    
-      await expect(
-        repository.createCompany(companyData)
-      ).resolves.not.toThrow();
-    
-      expect(dbMock.commandCalls(PutCommand).length).toBe(1);
-    });
-
-    it('should store company successfully and define as default', async () => {
-  
-      const companyData: CompanyInterface = {
-        cnpj: '11111111000191', 
-        userId: mockUserId,
-        companyName: 'Test Company',
-        role: 'owner',
-        isDefault: true
-      };
-
-      dbMock.on(QueryCommand).resolves({
-        Items: [{
-          PK: `USER#${mockUserId}`,
-          SK: 'COMPANY#existing',
-          companyId: 'existing',
-          userId: mockUserId,
-          companyName: 'Existing Company',
-          cnpj: '11111111000191',
-          role: 'owner',
-          isDefault: true
-        }]
-      });
-    
-      dbMock.on(PutCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
-    
-      await expect(
-        repository.createCompany(companyData)
-      ).resolves.not.toThrow();
-    
-      expect(dbMock.commandCalls(PutCommand).length).toBe(2);
-    });
-
-    it('should handle database errors when storing', async () => {
-    
-      const companyData: CompanyInterface = {
-        cnpj: '11111111000191', 
-        userId: mockUserId,
-        companyName: 'Test Company',
-        role: 'owner',
-        isDefault: true
-      };
-
-      dbMock.on(PutCommand).rejects(new Error('Database error'));
-    
-      await expect(
-        repository.createCompany(companyData)
-      ).rejects.toThrow('Database error');
-    });
-
-    it('should return created company with generated companyId', async () => {
-      const companyData: CompanyInterface = {
-        cnpj: '11111111000191', 
-        userId: mockUserId,
-        companyName: 'Test Company',
-        role: 'owner',
-        isDefault: true
-      };
-
-      dbMock.on(PutCommand).resolves({ $metadata: { httpStatusCode: 200 } });
-
-      const created = await repository.createCompany(companyData);
-
-      expect(created).toHaveProperty('companyId');
-      expect(created.userId).toBe(mockUserId);
-      expect(created.companyName).toBe('Test Company');
-      expect(dbMock.commandCalls(PutCommand).length).toBeGreaterThanOrEqual(1);
-    });
-
+        isDefault: true,
+      })
+    );
   });
-  
-  describe('getCompanies', () => {
 
-    it('should return companies for a user', async () => {
-      const mockItems = [
-        { 
-          PK: `USER#${mockUserId}`, 
-          SK: 'COMPANY#c1', 
-          companyId: 'c1',
-          userId: mockUserId, 
-          companyName: 'Test Company', 
-          role: 'owner',
-          isDefault: true
-        },
-      ];
+  it('should return companies by user id', async () => {
+    const mockItems = [{
+      PK: `USER#${mockUserId}`,
+      SK: 'COMPANY#c1',
+      companyId: 'c1',
+      userId: mockUserId,
+      companyName: 'Test Company',
+      role: 'owner',
+      cnpj: '11111111000191',
+      isDefault: true,
+    }];
 
-      dbMock.on(QueryCommand).resolves({ Items: mockItems });
+    mockDbGateway.query.mockResolvedValueOnce(mockItems);
 
-      const result = await repository.getCompanies(mockUserId);
+    const result = await repository.getCompaniesByUserId(mockUserId);
 
-      expect(result).toHaveLength(1);
-      expect(result?.[0].companyName).toBe('Test Company');
-      expect(dbMock.commandCalls(QueryCommand).length).toBe(1);
-    });
-    
-    it('should return companies for a user', async () => {
-      const mockItems = [
-        { 
-          PK: `USER#${mockUserId}`, 
-          SK: 'COMPANY#c1', 
-          companyId: 'c1',
-          userId: mockUserId, 
-          companyName: 'Test Company', 
-          role: 'owner',
-          isDefault: false
-        },
-      ];
-
-      dbMock.on(QueryCommand).resolves({ Items: mockItems });
-
-      const result = await repository.getCompanies(mockUserId);
-
-      expect(result).toHaveLength(1);
-      expect(result?.[0].companyName).toBe('Test Company');
-      expect(dbMock.commandCalls(QueryCommand).length).toBe(1);
-    });
-
-    it('should handle database errors when querying', async () => {
-      dbMock.on(QueryCommand).rejects(new Error('Query error'));
-
-      await expect(repository.getCompanies(mockUserId)).rejects.toThrow('Query error');
-    });
-
+    expect(result).toHaveLength(1);
+    expect(result?.[0].companyName).toBe('Test Company');
+    expect(mockDbGateway.query).toHaveBeenCalledWith({ partitionKey: `USER#${mockUserId}` });
   });
-  
+
+  it('should return null when query result is empty', async () => {
+    mockDbGateway.query.mockResolvedValueOnce([]);
+
+    const result = await repository.getCompaniesByUserId(mockUserId);
+
+    expect(result).toStrictEqual([]);
+  });
+
+  it('should wrap database errors when persisting company', async () => {
+    const companyData: CompanyInterface = {
+      cnpj: '11111111000191',
+      userId: mockUserId,
+      companyName: 'Test Company',
+      role: 'owner',
+      isDefault: true,
+    };
+
+    mockDbGateway.put.mockRejectedValueOnce(new Error('Database error'));
+
+    await expect(repository.putCompany(companyData)).rejects.toThrow('Database error');
+  });
+
+  it('should wrap database errors when querying companies', async () => {
+    mockDbGateway.query.mockRejectedValueOnce(new Error('Query error'));
+
+    await expect(repository.getCompaniesByUserId(mockUserId)).rejects.toThrow('Query error');
+  });
 });

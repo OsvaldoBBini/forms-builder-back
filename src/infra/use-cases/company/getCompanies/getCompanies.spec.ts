@@ -1,46 +1,45 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
-import { handler } from './getCompanies';
-import * as companyRepositoryModule from '../repository/companyRepository';
+import { handler } from './handler';
 
-vi.mock('../repository/companyRepository', () => ({
-  companyRepository: {
-    getCompanies: vi.fn()
-  }
+const { mockCompanyRepository } = vi.hoisted(() => ({
+  mockCompanyRepository: {
+    getCompaniesByUserId: vi.fn(),
+    putCompany: vi.fn(),
+  },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockCompanyRepository = companyRepositoryModule.companyRepository as any;
+vi.mock('../repository/companyRepository', () => ({
+  CompanyRepository: vi.fn().mockImplementation(() => mockCompanyRepository),
+}));
 
 describe('getCompanies handler', () => {
-
   const mockUserId = 'user-abc';
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCompanyRepository.getCompanies.mockReset();
+    mockCompanyRepository.getCompaniesByUserId.mockReset();
   });
 
   it('should return companies list successfully', async () => {
-
     const event = {
       requestContext: {
         authorizer: {
           jwt: {
             claims: {
-              sub: mockUserId
-            }
-          }
-        }
-      }
+              sub: mockUserId,
+            },
+          },
+        },
+      },
     } as unknown as APIGatewayProxyEvent;
 
     const mockCompanies = [
-      { companyId: 'c1', userId: mockUserId, companyName: 'One', role: 'owner', cnpj: '11111111000191'},
-      { companyId: 'c2', userId: mockUserId, companyName: 'Two', role: 'member', cnpj: '11111111000191'}
+      { companyId: 'c1', userId: mockUserId, companyName: 'One', role: 'owner', cnpj: '11111111000191', isDefault: true },
+      { companyId: 'c2', userId: mockUserId, companyName: 'Two', role: 'member', cnpj: '11111111000191', isDefault: false },
     ];
 
-    mockCompanyRepository.getCompanies.mockResolvedValueOnce(mockCompanies);
+    mockCompanyRepository.getCompaniesByUserId.mockResolvedValueOnce(mockCompanies);
 
     const response = await handler(event);
     const responseBody = JSON.parse(response.body);
@@ -48,33 +47,29 @@ describe('getCompanies handler', () => {
     expect(response.statusCode).toBe(200);
     expect(responseBody.data.items).toHaveLength(2);
     expect(responseBody.data.items[0].companyName).toBe('One');
-
-    expect(mockCompanyRepository.getCompanies).toHaveBeenCalledWith(mockUserId);
+    expect(mockCompanyRepository.getCompaniesByUserId).toHaveBeenCalledWith(mockUserId);
   });
 
-  it('should return empty items when repository returns undefined', async () => {
-
+  it('should return empty items when repository returns null', async () => {
     const event = {
       requestContext: {
         authorizer: {
           jwt: {
             claims: {
-              sub: mockUserId
-            }
-          }
-        }
-      }
+              sub: mockUserId,
+            },
+          },
+        },
+      },
     } as unknown as APIGatewayProxyEvent;
 
-    mockCompanyRepository.getCompanies.mockResolvedValueOnce(undefined);
+    mockCompanyRepository.getCompaniesByUserId.mockResolvedValueOnce(null);
 
     const response = await handler(event);
     const responseBody = JSON.parse(response.body);
 
     expect(response.statusCode).toBe(200);
     expect(responseBody.data.items).toEqual([]);
-
-    expect(mockCompanyRepository.getCompanies).toHaveBeenCalledWith(mockUserId);
+    expect(mockCompanyRepository.getCompaniesByUserId).toHaveBeenCalledWith(mockUserId);
   });
-
 });

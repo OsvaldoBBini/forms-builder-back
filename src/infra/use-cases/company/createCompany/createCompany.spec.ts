@@ -1,39 +1,39 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
-import { handler } from './createCompany';
-import * as companyRepositoryModule from '../repository/companyRepository';
+import { handler } from './handler';
 
-vi.mock('../repository/companyRepository', () => ({
-  companyRepository: {
-    createCompany: vi.fn()
+const { mockCompanyRepository } = vi.hoisted(() => ({
+  mockCompanyRepository: {
+    putCompany: vi.fn(),
+    getCompaniesByUserId: vi.fn(),
   }
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockCompanyRepository = companyRepositoryModule.companyRepository as any;
+vi.mock('../repository/companyRepository', () => ({
+  CompanyRepository: vi.fn().mockImplementation(() => mockCompanyRepository),
+}));
 
 describe('createCompany handler', () => {
-
   const mockUserId = 'user-123';
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCompanyRepository.createCompany.mockReset();
+    mockCompanyRepository.putCompany.mockReset();
+    mockCompanyRepository.getCompaniesByUserId.mockReset();
   });
 
   it('should create a new company successfully', async () => {
-
     const event = {
-      body: JSON.stringify({ companyName: 'AcmeCorp', cnpj: '11111111000191' }),
+      body: JSON.stringify({ companyName: 'AcmeCorp', cnpj: '11111111000191', isDefault: false }),
       requestContext: {
         authorizer: {
           jwt: {
             claims: {
-              sub: mockUserId
-            }
-          }
-        }
-      }
+              sub: mockUserId,
+            },
+          },
+        },
+      },
     } as unknown as APIGatewayProxyEvent;
 
     const mockCompany = {
@@ -41,68 +41,64 @@ describe('createCompany handler', () => {
       userId: mockUserId,
       companyName: 'AcmeCorp',
       role: 'owner',
-      cnpj: '11111111000191'
+      cnpj: '11111111000191',
+      isDefault: false,
     };
 
-    mockCompanyRepository.createCompany.mockResolvedValueOnce(mockCompany);
+    mockCompanyRepository.putCompany.mockResolvedValueOnce(mockCompany);
 
     const response = await handler(event);
     const responseBody = JSON.parse(response.body);
 
     expect(response.statusCode).toBe(201);
     expect(responseBody.data.company.companyName).toBe('AcmeCorp');
-
-    expect(mockCompanyRepository.createCompany).toHaveBeenCalledWith({
+    expect(mockCompanyRepository.putCompany).toHaveBeenCalledWith({
       userId: mockUserId,
       companyName: 'AcmeCorp',
       role: 'owner',
       isDefault: false,
-      cnpj: '11111111000191'
+      cnpj: '11111111000191',
     });
   });
 
   it('should return 422 when companyName is too short', async () => {
-
     const event = {
-      body: JSON.stringify({ companyName: 'A' }),
+      body: JSON.stringify({ companyName: 'A', cnpj: '11111111000191' }),
       requestContext: {
         authorizer: {
           jwt: {
             claims: {
-              sub: mockUserId
-            }
-          }
-        }
-      }
+              sub: mockUserId,
+            },
+          },
+        },
+      },
     } as unknown as APIGatewayProxyEvent;
 
     const response = await handler(event);
     const responseBody = JSON.parse(response.body);
 
     expect(response.statusCode).toBe(422);
-    expect(responseBody.data.message.properties).toHaveProperty('companyName');
-
-    expect(mockCompanyRepository.createCompany).not.toHaveBeenCalled();
+    expect(responseBody.data.message).toHaveProperty('properties');
+    expect(mockCompanyRepository.putCompany).not.toHaveBeenCalled();
   });
 
   it('should return 400 when body is empty', async () => {
-
     const event = {
       body: '',
       requestContext: {
         authorizer: {
           jwt: {
             claims: {
-              sub: mockUserId
-            }
-          }
-        }
-      }
+              sub: mockUserId,
+            },
+          },
+        },
+      },
     } as unknown as APIGatewayProxyEvent;
 
     const response = await handler(event);
 
     expect(response.statusCode).toBe(400);
   });
-
 });
