@@ -60,7 +60,6 @@ export class DynamoGateway implements DatabaseGatewayInterface {
       ExpressionAttributeValues: this.expressionAttributeValues(Object.keys(updateValues), updateValues)
     }
   );
-
 }
 
 export const dynamoGateway = new DynamoGateway();

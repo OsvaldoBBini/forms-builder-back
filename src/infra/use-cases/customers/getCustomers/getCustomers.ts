@@ -1,38 +1,24 @@
-import { ErrorManager } from '../../../../errors/errorManager';
-import { Logger } from '@aws-lambda-powertools/logger';
 import { customerRepository } from '../repository/customerRepository';
-import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
 import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage';
+import { functionWrapper } from '../../../utils/functionWrapper';
 
-const logger = new Logger({ serviceName: 'getCustomers' });
-const { errorHandler } = new ErrorManager(logger);
+export const handler = functionWrapper('getCustomers', async ({ event, logger }) => {
+  const { companyId } = event.pathParameters || {};
 
-export async function handler(event: APIGatewayProxyEvent) {
+  if (!companyId) {
+    return missingCompanyIdMessage;
+  }
 
-  try {
-    const { companyId } = event.pathParameters || {};
-    
-    if (!companyId) {
-      return missingCompanyIdMessage;
-    }
+  logger.info({ message: 'Fetching customers for company', companyId });
 
-    logger.info({ message: 'Fetching customers for company', companyId });
+  const customers = await customerRepository.getCustomers(companyId);
 
-    const customers = await customerRepository.getCustomers(companyId);
-  
-    return {
-      statusCode: 200,
-      body: JSON.stringify(
-        { 
-          data: {
-            items: customers || []
-          }
-        }
-      ),
-    };
-    
-  } catch (error) {
-    const errorResponse = errorHandler(error);
-    return errorResponse;
-  }  
-}
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      data: {
+        items: customers || []
+      }
+    }),
+  };
+});

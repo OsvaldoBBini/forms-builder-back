@@ -1,33 +1,21 @@
-import { Logger } from '@aws-lambda-powertools/logger';
-import { authGateway } from '../../../adapters/auth';
-import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import z from 'zod';
-import { ErrorManager } from '../../../../errors/errorManager';
+import { authGateway } from '../../../adapters/auth';
+import { functionWrapper } from '../../../utils/functionWrapper';
 
 const changePasswordConfirmationCodeSchema = z.object({
   email: z.email({message: 'Invalid email format.'}),
 });
 
-const logger = new Logger({ serviceName: 'changePasswordConfirmationCode' });
-const { errorHandler } = new ErrorManager(logger);
+export const handler = functionWrapper('changePasswordConfirmationCode', async ({ event, logger }) => {
+  logger.info('Change password confirmation code process started');
+  const { email } = changePasswordConfirmationCodeSchema.parse(JSON.parse(event.body || ''));
 
-export async function handler(event: APIGatewayProxyEventV2) {
+  logger.info({ message: 'Input validation successful', email });
+  await authGateway.changePasswordConfirmationCode(email);
 
-  try {
-    logger.info('Change password confirmation code process started');
-    const { email } = changePasswordConfirmationCodeSchema.parse(JSON.parse(event.body || ''));
-
-    logger.info({ message: 'Input validation successful', email });
-    await authGateway.changePasswordConfirmationCode(email);
-    
-    logger.info({ message: 'Password reset confirmation code sent successfully', email });
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ data: { user: { email } } })
-    };
-
-  } catch (e) {
-    const errorResponse = errorHandler(e);
-    return errorResponse;
-  }
-}
+  logger.info({ message: 'Password reset confirmation code sent successfully', email });
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ data: { user: { email } } })
+  };
+});

@@ -1,33 +1,19 @@
-import { ErrorManager } from '../../../../errors/errorManager';
-import { Logger } from '@aws-lambda-powertools/logger';
-import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
 import { companyRepository } from '../repository/companyRepository';
+import { functionWrapper } from '../../../utils/functionWrapper';
 
-const logger = new Logger({ serviceName: 'getCompanies' });
-const { errorHandler } = new ErrorManager(logger);
+export const handler = functionWrapper('getCompanies', async ({ event, logger }) => {
+  const userId = event.requestContext.authorizer?.jwt.claims.sub;
 
-export async function handler(event: APIGatewayProxyEvent) {
+  logger.info({ message: 'Fetching companies for user', userId });
 
-  try {
-    const userId = event.requestContext.authorizer?.jwt.claims.sub;
+  const companies = await companyRepository.getCompanies(userId);
 
-    logger.info({ message: 'Fetching companies for user', userId });
-
-    const companies = await companyRepository.getCompanies(userId);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(
-        { 
-          data: {
-            items: companies || []
-          }
-        }
-      ),
-    };
-    
-  } catch (error) {
-    const errorResponse = errorHandler(error);
-    return errorResponse;
-  }  
-}
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      data: {
+        items: companies || []
+      }
+    }),
+  };
+});

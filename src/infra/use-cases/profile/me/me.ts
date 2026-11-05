@@ -1,26 +1,15 @@
-import { Logger } from '@aws-lambda-powertools/logger';
-import { APIGatewayProxyEvent } from 'aws-lambda';
-import { ErrorManager } from '../../../../errors/errorManager';
 import { authGateway } from '../../../adapters/auth';
+import { functionWrapper } from '../../../utils/functionWrapper';
 
-const logger = new Logger({ serviceName: 'getProfile' });
-const { errorHandler } = new ErrorManager(logger);
+export const handler = functionWrapper('getProfile', async ({ event, logger }) => {
+  logger.info({ message: 'Get request context', requestContext: event.requestContext });
+  const userId = event.requestContext.authorizer?.jwt.claims.sub;
 
-export async function handler(event: APIGatewayProxyEvent) {
-  try {
-    logger.info({ message: 'Get request context', requestContext: event.requestContext });
-    const userId = event.requestContext.authorizer?.jwt.claims.sub;
+  const attributes = await authGateway.getUserInfos(userId);
+  logger.info({ message: 'Get attributes', attributes });
 
-    const attributes = await authGateway.getUserInfos(userId);
-    logger.info({ message: 'Get attributes', attributes });
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ data: attributes }),
-    };
-
-  } catch (error) {
-    const errorResponse = errorHandler(error);
-    return errorResponse;
-  }
-}
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ data: attributes }),
+  };
+});
