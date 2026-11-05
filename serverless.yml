@@ -125,7 +125,7 @@ functions:
             name: CognitoAuthorizer
  
   create-customer-service:
-    handler: src/infra/use-cases/customers/createCustomer/createCustomer.handler
+    handler: src/infra/use-cases/customers/createCustomer/handler.handler
     events:
       - httpApi:
           path: /companies/{companyId}/customers
@@ -134,7 +134,7 @@ functions:
             name: CognitoAuthorizer
   
   update-customer-service:
-    handler: src/infra/use-cases/customers/updateCustomer/updateCustomer.handler
+    handler: src/infra/use-cases/customers/updateCustomer/handler.handler
     events:
       - httpApi:
           path: /companies/{companyId}/customers/{customerId}
@@ -143,7 +143,7 @@ functions:
             name: CognitoAuthorizer
   
   get-customers-service:
-    handler: src/infra/use-cases/customers/getCustomers/getCustomers.handler
+    handler: src/infra/use-cases/customers/getCustomers/handler.handler
     events:
       - httpApi:
           path: /companies/{companyId}/customers
@@ -152,7 +152,7 @@ functions:
             name: CognitoAuthorizer
 
   create-company-service:
-    handler: src/infra/use-cases/company/createCompany/createCompany.handler
+    handler: src/infra/use-cases/company/createCompany/handler.handler
     events:
       - httpApi:
           path: /companies
@@ -161,7 +161,7 @@ functions:
             name: CognitoAuthorizer
   
   get-companies-service:
-    handler: src/infra/use-cases/company/getCompanies/getCompanies.handler
+    handler: src/infra/use-cases/company/getCompanies/handler.handler
     events:
       - httpApi:
           path: /companies
@@ -170,7 +170,7 @@ functions:
             name: CognitoAuthorizer
 
   create-form-service:
-    handler: src/infra/use-cases/forms/createForm/createForm.handler
+    handler: src/infra/use-cases/forms/createForm/handler.handler
     events:
       - httpApi:
           path: /forms
@@ -181,7 +181,7 @@ functions:
       FIELDS_BUCKET: !Ref S3Bucket
 
   get-forms-service:
-    handler: src/infra/use-cases/forms/getForms/getForms.handler
+    handler: src/infra/use-cases/forms/getForms/handler.handler
     events:
       - httpApi:
           path: /forms
