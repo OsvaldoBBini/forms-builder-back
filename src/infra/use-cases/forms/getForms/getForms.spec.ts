@@ -1,16 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
-import { handler } from './getForms';
-import * as formsRepositoryModule from '../repository/formsRepository';
+import { handler } from './handler';
 
-vi.mock('../repository/formsRepository', () => ({
-  formsRepository: {
-    getForms: vi.fn()
-  }
+const { mockFormsRepository } = vi.hoisted(() => ({
+  mockFormsRepository: {
+    getForms: vi.fn(),
+    storeForm: vi.fn(),
+  },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFormsRepository = formsRepositoryModule.formsRepository as any;
+vi.mock('../repository/formsRepository', () => ({
+  FormsRepository: vi.fn().mockImplementation(() => mockFormsRepository),
+}));
 
 describe('getForms handler', () => {
   beforeEach(() => {
