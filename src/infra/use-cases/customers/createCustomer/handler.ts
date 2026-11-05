@@ -1,6 +1,8 @@
 import z from 'zod';
-import { customerRepository } from '../repository/customerRepository';
+import { CustomerRepository } from '../repository/customerRepository';
+import { CreateCustomerUseCase } from './use-case';
 import { functionWrapper } from '../../../utils/functionWrapper';
+import { databaseGateway } from '../../../adapters/database';
 
 const createCustomerSchema = z.object({
   email: z.email({message: 'Invalid email format.'}).nullable(),
@@ -11,21 +13,24 @@ const createCustomerSchema = z.object({
 
 export const handler = functionWrapper('createCustomer', async ({ event, logger }) => {
   const { companyId } = event.pathParameters || {};
+  const customerRepository = new CustomerRepository(databaseGateway);
+  const createCustomerUseCase = new CreateCustomerUseCase(customerRepository);
 
   const {
     email,
     cpf,
     phoneNumber,
-    fullName } = createCustomerSchema.parse(JSON.parse(event.body || ''));
+    fullName,
+  } = createCustomerSchema.parse(JSON.parse(event.body || ''));
 
   logger.info({ message: 'Input validation successful', email, fullName, cpf, phoneNumber });
 
-  const customerId = await customerRepository.storeCustomer({companyId: companyId!, email, cpf, phoneNumber, fullName });
+  const customer = await createCustomerUseCase.execute({ companyId: companyId!, email, cpf, phoneNumber, fullName });
 
   return {
     statusCode: 201,
     body: JSON.stringify({
-      data: { customer: { email, cpf, phoneNumber, fullName, customerId } }
+      data: { customer }
     }),
   };
 });

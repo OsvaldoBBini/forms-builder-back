@@ -1,165 +1,138 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { mockClient } from 'aws-sdk-client-mock';
-import { DynamoDBDocumentClient, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CustomerRepository } from './customerRepository';
 import { CustomerInterface } from '../../../domain/entities/customer/customer';
-import { DatabaseError } from '../../../../errors/errorManager';
-import { dynamoGateway } from '../../../adapters/database/dynamo';
-
-const dbMock = mockClient(DynamoDBDocumentClient);
 
 describe('CustomerRepository', () => {
+  const mockDbGateway = {
+    query: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    update: vi.fn(),
+  };
 
   let repository: CustomerRepository;
 
   beforeEach(() => {
-    dbMock.reset();
-    repository = new CustomerRepository(dynamoGateway);
+    vi.clearAllMocks();
+    repository = new CustomerRepository(mockDbGateway as any);
   });
 
-  describe('storeCustomer', () => {
+  it('should store customer successfully', async () => {
+    const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
+    const customerData: CustomerInterface = {
+      companyId,
+      email: 'john@example.com',
+      cpf: '12345678901',
+      phoneNumber: '11987654321',
+      fullName: 'John Doe',
+    };
 
-    it('should store customer successfully', async () => {
+    mockDbGateway.put.mockResolvedValueOnce(undefined);
 
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerData: CustomerInterface = {
-        companyId: companyId,
-        email: 'john@example.com',
-        cpf: '12345678901',
-        phoneNumber: '11987654321',
-        fullName: 'John Doe'
-      };
+    const customerId = await repository.storeCustomer(customerData);
 
-      dbMock.on(PutCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
+    expect(customerId).toBeTruthy();
+    expect(mockDbGateway.put).toHaveBeenCalledWith(
+      expect.objectContaining({
+        PK: `COMPANY#${companyId}#CUSTOMERS`,
+        SK: expect.stringMatching(/^CUSTOMER#.+$/),
+        ...customerData,
+        customerId: expect.any(String),
+      })
+    );
+  });
 
-      await expect(
-        repository.storeCustomer(customerData)
-      ).resolves.not.toThrow();
+  it('should call put with customer payload for optional email', async () => {
+    const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
+    const customerData: CustomerInterface = {
+      companyId,
+      cpf: '12345678901',
+      phoneNumber: '11987654321',
+      fullName: 'John Doe',
+    };
 
-      expect(dbMock.commandCalls(PutCommand).length).toBe(1);
-    });
+    mockDbGateway.put.mockResolvedValueOnce(undefined);
 
-    it('should call PutCommand with correct parameters', async () => {
+    await repository.storeCustomer(customerData);
 
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerData: CustomerInterface = {
-        companyId: companyId,
-        email: 'john@example.com',
-        cpf: '12345678901',
-        phoneNumber: '11987654321',
-        fullName: 'John Doe'
-      };
-
-      dbMock.on(PutCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
-
-      await repository.storeCustomer(customerData);
-
-      const putCommand = dbMock.commandCalls(PutCommand)[0];
-      expect(putCommand.args[0].input.Item).toEqual(
-        expect.objectContaining({
-          PK: `COMPANY#${customerData.companyId}#CUSTOMERS`,
-          ...customerData,
-          customerId: expect.any(String)
-        })
-      );
-    });
-
-    it('should store customer with optional email field', async () => {
-
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerData: CustomerInterface = {
-        companyId: companyId,
+    expect(mockDbGateway.put).toHaveBeenCalledWith(
+      expect.objectContaining({
+        PK: `COMPANY#${companyId}#CUSTOMERS`,
+        SK: expect.stringMatching(/^CUSTOMER#.+$/),
+        companyId,
         cpf: '12345678901',
         phoneNumber: '11987654321',
         fullName: 'John Doe',
-      };
-
-      dbMock.on(PutCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
-
-      await repository.storeCustomer(customerData);
-
-      const putCommand = dbMock.commandCalls(PutCommand)[0];
-      expect(putCommand.args[0].input.Item).toEqual(
-        expect.objectContaining({
-          PK: `COMPANY#${customerData.companyId}#CUSTOMERS`,
-          ...customerData,
-          customerId: expect.any(String)
-        })
-      );
-    });
-
-    it('should handle database errors when storing', async () => {
-
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerData: CustomerInterface = {
-        companyId: companyId,
-        email: 'john@example.com',
-        cpf: '12345678901',
-        phoneNumber: '11987654321',
-        fullName: 'John Doe',
-      };
-
-      dbMock.on(PutCommand).rejects(new Error('Database error'));
-
-      await expect(
-        repository.storeCustomer(customerData)
-      ).rejects.toThrow('Database error');
-    });
-
+        customerId: expect.any(String),
+      })
+    );
   });
 
-  describe('updateCustomer', () => {
+  it('should return a mapped list of customers for a company', async () => {
+    const companyId = 'company-123';
+    const mockItems = [{
+      PK: `COMPANY#${companyId}#CUSTOMERS`,
+      SK: 'CUSTOMER#customer-1',
+      companyId,
+      email: 'john@example.com',
+      cpf: '12345678901',
+      phoneNumber: '11987654321',
+      fullName: 'John Doe',
+      customerId: 'customer-1',
+    }];
 
-    it('should update customer successfully', async () => {
+    mockDbGateway.query.mockResolvedValueOnce(mockItems);
 
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerId = 'customer-12345';
+    const result = await repository.getCustomers(companyId);
 
-      const customerData: CustomerInterface = {
-        companyId: companyId,
+    expect(result).toEqual([
+      expect.objectContaining({
+        companyId,
+        customerId: 'customer-1',
         email: 'john@example.com',
-        cpf: '12345678901',
-        phoneNumber: '11987654321',
-        fullName: 'John Doe'
-      };
-
-      dbMock.on(UpdateCommand).resolves({
-        $metadata: { httpStatusCode: 200 }
-      });
-
-      await expect(
-        repository.updateCustomer({ ...customerData, customerId })
-      ).resolves.not.toThrow();
-
-      expect(dbMock.commandCalls(UpdateCommand).length).toBe(1);
-    });
-    
+      }),
+    ]);
+    expect(mockDbGateway.query).toHaveBeenCalledWith({ partitionKey: `COMPANY#${companyId}#CUSTOMERS` });
   });
 
-  describe('Error Handling', () => {
+  it('should update customer successfully', async () => {
+    const companyId = 'company-123';
+    const customerId = 'customer-12345';
+    const customerData = {
+      companyId,
+      customerId,
+      email: 'john@example.com',
+      cpf: '12345678901',
+      phoneNumber: '11987654321',
+      fullName: 'John Doe',
+    };
 
-    it('should throw DatabaseError on storeCustomer when DB fails', async () => {
+    mockDbGateway.update.mockResolvedValueOnce(undefined);
 
-      const companyId = '599b80c6-6428-4863-a255-f85f986c24e2';
-      const customerData: CustomerInterface = {
-        companyId: companyId,
-        email: 'john@example.com',
-        cpf: '12345678901',
-        phoneNumber: '11987654321',
-        fullName: 'John Doe'
-      };
+    await expect(repository.updateCustomer(customerData)).resolves.toBeUndefined();
+    expect(mockDbGateway.update).toHaveBeenCalledWith(
+      { pk: `COMPANY#${companyId}#CUSTOMERS`, sk: `CUSTOMER#${customerId}` },
+      { ...customerData }
+    );
+  });
 
-      dbMock.on(PutCommand).rejects(new Error('Table not found'));
+  it('should wrap database errors when storing customer', async () => {
+    const customerData: CustomerInterface = {
+      companyId: 'company-123',
+      email: 'john@example.com',
+      cpf: '12345678901',
+      phoneNumber: '11987654321',
+      fullName: 'John Doe',
+    };
 
-      await expect(
-        repository.storeCustomer(customerData)
-      ).rejects.toThrow(DatabaseError);
-    });
+    mockDbGateway.put.mockRejectedValueOnce(new Error('Database error'));
+
+    await expect(repository.storeCustomer(customerData)).rejects.toThrow('Database error');
+  });
+
+  it('should wrap database errors when querying customers', async () => {
+    mockDbGateway.query.mockRejectedValueOnce(new Error('Query error'));
+
+    await expect(repository.getCustomers('company-123')).rejects.toThrow('Query error');
   });
 });

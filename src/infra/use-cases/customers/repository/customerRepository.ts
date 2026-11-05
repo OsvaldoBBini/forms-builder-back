@@ -1,78 +1,50 @@
-import { DatabaseGatewayInterface, dynamoGateway } from '../../../adapters/database/dynamo';
+import crypto from 'crypto';
+import { IDatabaseGateway } from '../../../adapters/database';
 import { CustomerDomainInterface, CustomerInterface, CustomerPersistenceInterface } from '../../../domain/entities/customer/customer';
 import { CustomerRepositoryInterface } from '../../../domain/entities/customer/customerRepository';
 import { DatabaseError } from '../../../../errors/errorManager';
 
 export class CustomerRepository implements CustomerRepositoryInterface {
+  private dbGateway: IDatabaseGateway;
 
-  private dbGateway: DatabaseGatewayInterface;
-
-  constructor(dbGateway: DatabaseGatewayInterface) {
+  constructor(dbGateway: IDatabaseGateway) {
     this.dbGateway = dbGateway;
   }
 
   private mapCustomerData(persistenceData: CustomerPersistenceInterface): CustomerDomainInterface {
     return {
       companyId: persistenceData.companyId,
-      email: persistenceData.email === null ? '' : persistenceData.email, 
+      email: persistenceData.email === null ? '' : persistenceData.email,
       fullName: persistenceData.fullName,
-      cpf: persistenceData.cpf, 
+      cpf: persistenceData.cpf,
       phoneNumber: persistenceData.phoneNumber,
-      customerId: persistenceData.customerId
+      customerId: persistenceData.customerId,
     };
   }
 
-  private async queryCustomersByCompanyId(companyId: string): Promise<CustomerPersistenceInterface[] | undefined> {
-    const { dbClient, queryCommand } = this.dbGateway;
-    const command = queryCommand({
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: { ':pk': `COMPANY#${companyId}#CUSTOMERS` }
-    });
-  
-    const { Items: dbResponse } = await dbClient.send(command);
-    const response = dbResponse as CustomerPersistenceInterface[] | undefined;
-    return response;
-  } 
-
-  private async putCustomer(customerData: CustomerInterface): Promise<string> {
-    const { dbClient, putCommand } = this.dbGateway;
-
-    const customerId = crypto.randomUUID(); 
-
-    const command = putCommand({
-      PK: `COMPANY#${customerData.companyId}#CUSTOMERS`,
-      SK: `CUSTOMER#${customerId}`,
-      ...customerData,
-      customerId: customerId
-    });
-    await dbClient.send(command);
-    return customerId;
-  }
-
-  private async changeCustomer(customerData: CustomerDomainInterface): Promise<void> {
-    const { dbClient, updateCommand } = this.dbGateway;
-
-    const command = updateCommand({
-      PK: `COMPANY#${customerData.companyId}#CUSTOMERS`,
-      SK: `CUSTOMER#${customerData.customerId}`
-    }, customerData);
-    await dbClient.send(command);
-  }
-  
   async getCustomers(companyId: string): Promise<CustomerDomainInterface[] | undefined> {
     try {
-      const response = await this.queryCustomersByCompanyId(companyId);  
-      const customersData: CustomerDomainInterface[] | undefined = response ? response.map((item) => this.mapCustomerData(item)) : undefined;
+      const response = await this.dbGateway.query<CustomerPersistenceInterface>({
+        partitionKey: `COMPANY#${companyId}#CUSTOMERS`,
+      });
 
-      return customersData;
+      return response.map((item) => this.mapCustomerData(item));
     } catch (e) {
       throw new DatabaseError(String(e));
     }
   }
-  
+
   async storeCustomer(customerData: CustomerInterface): Promise<string> {
     try {
-      const customerId = await this.putCustomer(customerData);
+      const customerId = crypto.randomUUID();
+      const item: CustomerPersistenceInterface = {
+        PK: `COMPANY#${customerData.companyId}#CUSTOMERS`,
+        SK: `CUSTOMER#${customerId}`,
+        ...customerData,
+        customerId,
+      };
+
+      await this.dbGateway.put(item);
       return customerId;
     } catch (e) {
       throw new DatabaseError(String(e));
@@ -81,11 +53,15 @@ export class CustomerRepository implements CustomerRepositoryInterface {
 
   async updateCustomer(customerData: CustomerDomainInterface): Promise<void> {
     try {
-      await this.changeCustomer(customerData);
+      await this.dbGateway.update<CustomerPersistenceInterface>(
+        {
+          pk: `COMPANY#${customerData.companyId}#CUSTOMERS`,
+          sk: `CUSTOMER#${customerData.customerId}`,
+        },
+        { ...customerData }
+      );
     } catch (e) {
       throw new DatabaseError(String(e));
     }
   }
 }
-
-export const customerRepository = new CustomerRepository(dynamoGateway);

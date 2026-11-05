@@ -1,6 +1,8 @@
 import z from 'zod';
-import { customerRepository } from '../repository/customerRepository';
+import { CustomerRepository } from '../repository/customerRepository';
+import { UpdateCustomerUseCase } from './use-case';
 import { functionWrapper } from '../../../utils/functionWrapper';
+import { databaseGateway } from '../../../adapters/database';
 
 const updateCustomerSchema = z.object({
   email: z.email({message: 'Invalid email format.'}).nullable(),
@@ -11,21 +13,24 @@ const updateCustomerSchema = z.object({
 
 export const handler = functionWrapper('updateCustomer', async ({ event, logger }) => {
   const { companyId, customerId } = event.pathParameters || {};
+  const customerRepository = new CustomerRepository(databaseGateway);
+  const updateCustomerUseCase = new UpdateCustomerUseCase(customerRepository);
 
   const {
     email,
     cpf,
     phoneNumber,
-    fullName } = updateCustomerSchema.parse(JSON.parse(event.body || ''));
+    fullName,
+  } = updateCustomerSchema.parse(JSON.parse(event.body || ''));
 
   logger.info({ message: 'Input validation successful', email, fullName, cpf, phoneNumber });
 
-  await customerRepository.updateCustomer({companyId: companyId!, customerId: customerId!, email, cpf, phoneNumber, fullName });
+  const customer = await updateCustomerUseCase.execute({ companyId: companyId!, customerId: customerId!, email, cpf, phoneNumber, fullName });
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      data: { customer: { email, cpf, phoneNumber, fullName, customerId } }
+      data: { customer }
     }),
   };
 });
