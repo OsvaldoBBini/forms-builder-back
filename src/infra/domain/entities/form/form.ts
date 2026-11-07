@@ -11,7 +11,7 @@ export interface FormUpdateInterface extends FormInterface{
   formId: string;
 }
 
-export interface FormDomainInterface extends Omit<FormInterface, 'fieldsAddress'> {
+export interface FormDomainInterface extends FormInterface {
   formId: string;
   createdAt: string;
 }
@@ -21,6 +21,7 @@ export interface FormPersistenceInterface extends FormInterface{
   SK: string;
   formId: string;
   createdAt: string;
+  fieldsAddress: string;
 }
 
 export const fieldTypeSchema = z.enum([
