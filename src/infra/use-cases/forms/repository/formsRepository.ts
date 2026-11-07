@@ -16,8 +16,7 @@ export class FormsRepository implements FormRepositoryInterface {
       companyId: persistenceData.companyId,
       formId: persistenceData.formId,
       formName: persistenceData.formName,
-      createdAt: persistenceData.createdAt,
-      fieldsAddress: persistenceData.fieldsAddress,
+      createdAt: persistenceData.createdAt
     };
   }
 
