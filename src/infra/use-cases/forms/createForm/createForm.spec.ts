@@ -55,11 +55,7 @@ describe('createForm handler', () => {
     const responseBody = JSON.parse(response.body);
 
     expect(response.statusCode).toBe(201);
-    expect(responseBody.data.form).toEqual(expect.objectContaining({
-      formId: expect.any(String),
-      formName: 'Lead Form',
-      companyId: 'company-123'
-    }));
+    expect(responseBody.data.form).toEqual(expect.any(String));
 
     expect(mockFileStoreGateway.storeJsonFile).toHaveBeenCalledWith(
       expect.stringContaining('test-bucket/company-123/fields/'),

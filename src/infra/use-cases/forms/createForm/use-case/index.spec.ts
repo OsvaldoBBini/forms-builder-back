@@ -46,10 +46,6 @@ describe('CreateFormUseCase', () => {
         fieldsAddress: expect.stringContaining('test-bucket/company-123/fields/'),
       })
     );
-    expect(result).toEqual({
-      companyId: 'company-123',
-      formId: expect.any(String),
-      formName: 'Lead Form',
-    });
+    expect(result).toEqual(expect.any(String));
   });
 });

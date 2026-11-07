@@ -1,6 +1,7 @@
 import { FileStoreGatewayInterface } from '../../../../adapters/fileStore';
 import { IField } from '../../../../domain/entities/form/form';
 import { FormRepositoryInterface } from '../../../../domain/entities/form/formRepository';
+import crypto from 'crypto';
 
 export class CreateFormUseCase {
   private readonly formsRepository: FormRepositoryInterface;
@@ -14,7 +15,7 @@ export class CreateFormUseCase {
   async execute({ companyId, formName, fields }: { 
     companyId: string; 
     formName: string; 
-    fields: IField[] }): Promise<{ companyId: string; formId: string; formName: string }> {
+    fields: IField[] }): Promise<string> {
 
     const formId = crypto.randomUUID();
     const fieldAddress = `${this.fileStoreGateway.bucketName}/${companyId}/fields/${formId}/fields.json`;
@@ -36,6 +37,6 @@ export class CreateFormUseCase {
       throw new Error(`Failed to store form: ${e}`);
     }
 
-    return { companyId, formId, formName };
+    return formId;
   }
 }

@@ -8,7 +8,7 @@ export class S3Gateway implements FileStoreGatewayInterface {
 
   constructor() {
     this.s3Client = new S3Client();
-    this.bucketName = process.env.S3_BUCKET_NAME || '';
+    this.bucketName = process.env.FIELDS_BUCKET || '';
   }
 
   async storeJsonFile(fileName: string, fileContent: string): Promise<void> {
