@@ -52,26 +52,28 @@ describe('FormsRepository', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should store form and return generated formId', async () => {
+  it('should store the form payload in the database', async () => {
     const formData: FormInterface = {
       companyId,
+      formId: 'form-123',
       formName: 'Lead Form',
+      fieldsAddress: `test-bucket/${companyId}/fields/form-123`,
     };
 
     mockDbGateway.put.mockResolvedValueOnce(undefined);
 
-    const formId = await repository.storeForm(formData);
+    const result = await repository.storeForm(formData);
 
-    expect(formId).toBeTruthy();
+    expect(result).toBeUndefined();
     expect(mockDbGateway.put).toHaveBeenCalledWith(
       expect.objectContaining({
         PK: `COMPANY#${companyId}#FORMS`,
-        SK: expect.stringMatching(/^FORM#.+$/),
+        SK: 'FORM#form-123',
         companyId,
         formName: 'Lead Form',
-        formId: expect.any(String),
+        formId: 'form-123',
         createdAt: expect.any(String),
-        fieldsAddress: `${process.env.FIELDS_BUCKET}/${companyId}/fields/${formId}`,
+        fieldsAddress: `test-bucket/${companyId}/fields/form-123`,
       })
     );
   });

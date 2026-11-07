@@ -9,6 +9,7 @@ import {
   NotAuthorizedException,
   ExpiredCodeException
 } from '@aws-sdk/client-cognito-identity-provider';
+import { NoSuchKey, NoSuchBucket, AccessDenied as BucketAccessDenied } from '@aws-sdk/client-s3';
 
 
 export class DatabaseError extends Error {
@@ -43,7 +44,23 @@ export class ErrorManager {
     this.dispatchLoggerMessage(e);
 
     if (e instanceof DatabaseError) {
-      return this.throwError(400, 'Database error occurred');
+      return this.throwError(400, 'A error hapened while trying to persist your data');
+    }
+
+    if (e instanceof NoSuchKey) {
+      return this.throwError(404, 'The requested file does not exist or was not found in the storage');
+    }
+
+    if (e instanceof NoSuchBucket) {
+      return this.throwError(404, 'Storage not found');
+    }
+
+    if (e instanceof BucketAccessDenied) {
+      return this.throwError(403, 'Access denied');
+    }
+
+    if (e instanceof NoSuchKey) {
+      return this.throwError(404, 'The requested file does not exist or was not found in the storage');
     }
 
     if(e instanceof ZodError) {

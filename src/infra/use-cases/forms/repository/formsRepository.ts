@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { IDatabaseGateway } from '../../../adapters/database';
 import { FormRepositoryInterface } from '../../../domain/entities/form/formRepository';
 import { DatabaseError } from '../../../../errors/errorManager';
@@ -7,11 +6,9 @@ import { formatDate } from '../../../utils/formatDate';
 
 export class FormsRepository implements FormRepositoryInterface {
   private dbGateway: IDatabaseGateway;
-  private readonly bucketName: string;
 
   constructor(dbGateway: IDatabaseGateway) {
     this.dbGateway = dbGateway;
-    this.bucketName = process.env.FIELDS_BUCKET || '';
   }
 
   private mapFormData(persistenceData: FormPersistenceInterface): FormDomainInterface {
@@ -35,20 +32,18 @@ export class FormsRepository implements FormRepositoryInterface {
     }
   }
 
-  async storeForm(formData: FormInterface): Promise<string> {
+  async storeForm(formData: FormInterface): Promise<void> {
     try {
-      const formId = crypto.randomUUID();
       const item: FormPersistenceInterface = {
         PK: `COMPANY#${formData.companyId}#FORMS`,
-        SK: `FORM#${formId}`,
+        SK: `FORM#${formData.formId}`,
         ...formData,
-        formId,
         createdAt: formatDate(new Date()),
-        fieldsAddress: `${this.bucketName}/${formData.companyId}/fields/${formId}`,
+        fieldsAddress: formData.fieldsAddress,
       };
 
       await this.dbGateway.put(item);
-      return formId;
+      return; 
     } catch (e) {
       throw new DatabaseError(String(e));
     }

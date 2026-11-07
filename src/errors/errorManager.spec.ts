@@ -25,7 +25,7 @@ describe('ErrorManager', () => {
       const response = errorManager.errorHandler(error);
 
       expect(response.statusCode).toBe(400);
-      expect(JSON.parse(response.body).data.message).toBe('Database error occurred');
+      expect(JSON.parse(response.body).data.message).toBe('A error hapened while trying to persist your data');
     });
 
     it('should log DatabaseError correctly', () => {
