@@ -17,12 +17,14 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/FormsBuilderTable"
+
         - Effect: Allow
           Action:
             - s3:PutObject
             - s3:GetObject
-            - s3: DeleteObject
+            - s3:DeleteObject
           Resource: "arn:aws:s3:::forms-builder-fields-bucket/*"
+
         - Effect: Allow
           Action:
             - cognito-idp:AdminGetUser
@@ -179,7 +181,7 @@ functions:
     handler: src/infra/use-cases/forms/createForm/handler.handler
     events:
       - httpApi:
-          path: companies/{companyId}/forms
+          path: /companies/{companyId}/forms
           method: POST
           authorizer: 
             name: CognitoAuthorizer
@@ -190,7 +192,7 @@ functions:
     handler: src/infra/use-cases/forms/getForms/handler.handler
     events:
       - httpApi:
-          path: companies/{companyId}/forms
+          path: /companies/{companyId}/forms
           method: GET
           authorizer: 
             name: CognitoAuthorizer
