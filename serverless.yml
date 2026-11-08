@@ -197,6 +197,16 @@ functions:
           authorizer: 
             name: CognitoAuthorizer
 
+  get-form-fields-service:
+    handler: src/infra/use-cases/forms/getFields/handler.handler
+    events:
+      - httpApi:
+          path: /companies/{companyId}/forms/{formId}/fields
+          method: GET
+          authorizer: 
+            name: CognitoAuthorizer
+    environment:
+      FIELDS_BUCKET: !Ref S3Bucket
 
 resources:
   Resources:
