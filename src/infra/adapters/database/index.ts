@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DynamoGateway, QueryFilters } from './dynamo';
+import { DynamoGateway, type QueryFilters } from './dynamo.js';
 
 export interface DatabaseGatewayInterface<F> {
   query: <T>(filters: F) => Promise<T[]>;

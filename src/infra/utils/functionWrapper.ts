@@ -1,6 +1,6 @@
-import { APIGatewayProxyEvent, Context, APIGatewayProxyResult } from 'aws-lambda';
+import type { APIGatewayProxyEvent, Context, APIGatewayProxyResult } from 'aws-lambda';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { ErrorManager } from '../../errors/errorManager';
+import { ErrorManager } from '../../errors/errorManager.js';
 
 export interface HandlerContext {
   event: APIGatewayProxyEvent;

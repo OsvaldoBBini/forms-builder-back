@@ -1,5 +1,5 @@
-import { CustomerDomainInterface } from '../../../../domain/entities/customer/customer';
-import { CustomerRepositoryInterface } from '../../../../domain/entities/customer/customerRepository';
+import type { CustomerDomainInterface } from '../../../../domain/entities/customer/customer.js';
+import type { CustomerRepositoryInterface } from '../../../../domain/entities/customer/customerRepository.js';
 
 export class UpdateCustomerUseCase {
   private customerRepository: CustomerRepositoryInterface;

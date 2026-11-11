@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CompanyRepository } from './companyRepository';
-import { CompanyInterface } from '../../../domain/entities/company/company';
+import { CompanyRepository } from './companyRepository.js';
+import type { CompanyInterface } from '../../../domain/entities/company/company.js';
 
 describe('CompanyRepository', () => {
   const mockUserId = 'user123';

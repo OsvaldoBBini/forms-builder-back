@@ -51,7 +51,7 @@ describe('getProfile - me handler', () => {
       UserAttributes: mockUserAttributes,
     });
 
-    const { handler } = await import('./me');
+    const { handler } = await import('./me.js');
     const event = createEvent();
     const response = await handler(event);
 
@@ -69,7 +69,7 @@ describe('getProfile - me handler', () => {
       UserAttributes: [],
     });
 
-    const { handler } = await import('./me');
+    const { handler } = await import('./me.js');
     const event = createEvent();
     const response = await handler(event);
 
@@ -87,7 +87,7 @@ describe('getProfile - me handler', () => {
       UserAttributes: mockUserAttributes,
     });
 
-    const { handler } = await import('./me');
+    const { handler } = await import('./me.js');
     const customUserId = 'custom-user-id-456';
     const event = createEvent(customUserId);
     await handler(event);

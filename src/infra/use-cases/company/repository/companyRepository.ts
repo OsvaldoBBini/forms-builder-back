@@ -1,8 +1,8 @@
-import { DatabaseError } from '../../../../errors/errorManager';
-import { CompanyRepositoryInterface } from '../../../domain/entities/company/companyRepository';
-import { CompanyDomainInterface, CompanyInterface, CompanyPersistenceInterface } from '../../../domain/entities/company/company';
+import { DatabaseError } from '../../../../errors/errorManager.js';
+import type { CompanyRepositoryInterface } from '../../../domain/entities/company/companyRepository.js';
+import type { CompanyDomainInterface, CompanyInterface, CompanyPersistenceInterface } from '../../../domain/entities/company/company.js';
 import crypto from 'crypto';
-import { IDatabaseGateway } from '../../../adapters/database';
+import { type IDatabaseGateway } from '../../../adapters/database/index.js';
 
 export class CompanyRepository implements CompanyRepositoryInterface {
 

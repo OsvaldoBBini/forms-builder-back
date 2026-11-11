@@ -1,5 +1,5 @@
-import { CustomerDomainInterface } from '../../../domain/entities/customer/customer';
-import { CustomerInterface } from './customer';
+import { type CustomerDomainInterface } from '../../../domain/entities/customer/customer.js';
+import { type CustomerInterface } from './customer.js';
 
 export interface CustomerRepositoryInterface {
   getCustomers(companyId: string): Promise<CustomerDomainInterface[] | undefined>;

@@ -1,5 +1,5 @@
-import { authGateway } from '../../../adapters/auth';
-import { functionWrapper } from '../../../utils/functionWrapper';
+import { authGateway } from '../../../adapters/auth/index.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
 
 export const handler = functionWrapper('getProfile', async ({ event, logger }) => {
   logger.info({ message: 'Get request context', requestContext: event.requestContext });

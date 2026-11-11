@@ -1,4 +1,4 @@
-import { CompanyDomainInterface, CompanyInterface } from './company';
+import { type CompanyDomainInterface, type CompanyInterface } from './company.js';
 
 export interface CompanyRepositoryInterface {
   putCompany(companyData: CompanyInterface): Promise<CompanyDomainInterface>;

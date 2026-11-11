@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import { IDatabaseGateway } from '../../../adapters/database';
-import { CustomerDomainInterface, CustomerInterface, CustomerPersistenceInterface } from '../../../domain/entities/customer/customer';
-import { CustomerRepositoryInterface } from '../../../domain/entities/customer/customerRepository';
-import { DatabaseError } from '../../../../errors/errorManager';
+import type { IDatabaseGateway } from '../../../adapters/database/index.js';
+import type { CustomerDomainInterface, CustomerInterface, CustomerPersistenceInterface } from '../../../domain/entities/customer/customer.js';
+import type { CustomerRepositoryInterface } from '../../../domain/entities/customer/customerRepository.js';
+import { DatabaseError } from '../../../../errors/errorManager.js';
 
 export class CustomerRepository implements CustomerRepositoryInterface {
   private dbGateway: IDatabaseGateway;

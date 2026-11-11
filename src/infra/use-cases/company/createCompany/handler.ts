@@ -1,8 +1,8 @@
 import z from 'zod';
-import { CompanyRepository } from '../repository/companyRepository';
-import { CreateCompanyUseCase } from './use-case';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { databaseGateway } from '../../../adapters/database';
+import { CompanyRepository } from '../repository/companyRepository.js';
+import { CreateCompanyUseCase } from './use-case/index.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { databaseGateway } from '../../../adapters/database/index.js';
 
 const createCompanySchema = z.object({
   companyName: z.string().min(2, {message: 'Company name must be at least 2 characters long.'}).max(20, {message: 'Company name must be at most 20 characters long.'}),

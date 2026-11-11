@@ -1,8 +1,8 @@
-import { CustomerRepository } from '../repository/customerRepository';
-import { GetCustomersUseCase } from './use-case';
-import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { databaseGateway } from '../../../adapters/database';
+import { CustomerRepository } from '../repository/customerRepository.js';
+import { GetCustomersUseCase } from './use-case/index.js';
+import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { databaseGateway } from '../../../adapters/database/index.js';
 
 export const handler = functionWrapper('getCustomers', async ({ event, logger }) => {
   const { companyId } = event.pathParameters || {};

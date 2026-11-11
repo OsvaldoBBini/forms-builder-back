@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
-import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage';
-import { handler } from './handler';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
+import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage.js';
+import { handler } from './handler.js';
 
 const { mockFileStoreGateway } = vi.hoisted(() => ({
   mockFileStoreGateway: {

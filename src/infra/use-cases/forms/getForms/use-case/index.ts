@@ -1,5 +1,5 @@
-import { FormDomainInterface } from '../../../../domain/entities/form/form';
-import { FormRepositoryInterface } from '../../../../domain/entities/form/formRepository';
+import type { FormDomainInterface } from '../../../../domain/entities/form/form.js';
+import type { FormRepositoryInterface } from '../../../../domain/entities/form/formRepository.js';
 
 export class GetFormsUseCase {
   private formsRepository: FormRepositoryInterface;

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CreateFormUseCase } from './index';
+import { CreateFormUseCase } from './index.js';
 
 describe('CreateFormUseCase', () => {
   const mockFormsRepository = {

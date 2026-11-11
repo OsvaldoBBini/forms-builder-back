@@ -1,8 +1,8 @@
 import { CodeMismatchException, CognitoIdentityProviderClient, ConfirmSignUpCommand } from '@aws-sdk/client-cognito-identity-provider';
-import { APIGatewayProxyEventV2 } from 'aws-lambda';
+import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { mockClient } from 'aws-sdk-client-mock';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { handler } from './accountConfirmation';
+import { handler } from './accountConfirmation.js';
 
 describe('accountConfirmation', () => {
 
@@ -39,7 +39,7 @@ describe('accountConfirmation', () => {
     });
   });
 
-  it('should return a 409 with an error message indicating a invalid confirmation code', async () => {
+  it('should return a 404 with an error message indicating an invalid confirmation code', async () => {
 
     const mockError = new CodeMismatchException('');
     cognitoMock.on(ConfirmSignUpCommand).rejects(mockError);

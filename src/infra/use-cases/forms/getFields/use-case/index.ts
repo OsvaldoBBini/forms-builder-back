@@ -1,5 +1,5 @@
-import { IField } from '../../../../domain/entities/form/form';
-import { FileStoreGatewayInterface } from '../../../../adapters/fileStore';
+import type { IField } from '../../../../domain/entities/form/form.js';
+import type { FileStoreGatewayInterface } from '../../../../adapters/fileStore/index.js';
 
 export class GetFormFieldsUseCase {
   private readonly fileStoreGateway: FileStoreGatewayInterface;

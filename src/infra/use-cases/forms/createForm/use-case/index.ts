@@ -1,6 +1,6 @@
-import { FileStoreGatewayInterface } from '../../../../adapters/fileStore';
-import { IField } from '../../../../domain/entities/form/form';
-import { FormRepositoryInterface } from '../../../../domain/entities/form/formRepository';
+import type { FileStoreGatewayInterface } from '../../../../adapters/fileStore/index.js';
+import type { IField } from '../../../../domain/entities/form/form.js';
+import type { FormRepositoryInterface } from '../../../../domain/entities/form/formRepository.js';
 import crypto from 'crypto';
 
 export class CreateFormUseCase {

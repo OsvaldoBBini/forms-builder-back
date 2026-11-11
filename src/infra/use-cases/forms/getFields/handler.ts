@@ -1,7 +1,7 @@
-import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { GetFormFieldsUseCase } from './use-case';
-import { fileStoreGateway } from '../../../adapters/fileStore';
+import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { GetFormFieldsUseCase } from './use-case/index.js';
+import { fileStoreGateway } from '../../../adapters/fileStore/index.js';
 
 export const handler = functionWrapper('getFields', async ({ event, logger }) => {
   const { companyId, formId } = event.pathParameters || {};

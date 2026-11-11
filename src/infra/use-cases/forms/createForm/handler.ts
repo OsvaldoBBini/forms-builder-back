@@ -1,10 +1,10 @@
 import z from 'zod';
-import { FormsRepository } from '../repository/formsRepository';
-import { CreateFormUseCase } from './use-case';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { databaseGateway } from '../../../adapters/database';
-import { fieldsSchema } from '../../../domain/entities/form/form';
-import { fileStoreGateway } from '../../../adapters/fileStore';
+import { FormsRepository } from '../repository/formsRepository.js';
+import { CreateFormUseCase } from './use-case/index.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { databaseGateway } from '../../../adapters/database/index.js';
+import { fieldsSchema } from '../../../domain/entities/form/form.js';
+import { fileStoreGateway } from '../../../adapters/fileStore/index.js';
 
 const createFormSchema = z.object({
   formName: z.string()

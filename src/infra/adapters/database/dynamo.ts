@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { DatabaseGatewayInterface } from '.';
+import { type DatabaseGatewayInterface } from './index.js';
 
 type filterType = 'begins_with' | 'contains' | 'equals';
 

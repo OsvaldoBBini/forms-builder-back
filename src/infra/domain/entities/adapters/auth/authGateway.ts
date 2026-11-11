@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import { 
-  SignInInterface, 
-  AccessPayloadInterface, 
-  SignUpInterface, 
-  ChangePasswordInterface, 
-  ConfirmAccountInterface 
-} from './auth';
+  type SignInInterface, 
+  type AccessPayloadInterface, 
+  type SignUpInterface, 
+  type ChangePasswordInterface, 
+  type ConfirmAccountInterface 
+} from './auth.js';
 
 
 export interface AuthGatewayInterface {

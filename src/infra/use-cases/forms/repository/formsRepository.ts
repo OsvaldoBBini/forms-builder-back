@@ -1,8 +1,8 @@
-import { IDatabaseGateway } from '../../../adapters/database';
-import { FormRepositoryInterface } from '../../../domain/entities/form/formRepository';
-import { DatabaseError } from '../../../../errors/errorManager';
-import { FormDomainInterface, FormInterface, FormPersistenceInterface, FormUpdateInterface } from '../../../domain/entities/form/form';
-import { formatDate } from '../../../utils/formatDate';
+import type { IDatabaseGateway } from '../../../adapters/database/index.js';
+import type { FormRepositoryInterface } from '../../../domain/entities/form/formRepository.js';
+import { DatabaseError } from '../../../../errors/errorManager.js';
+import type { FormDomainInterface, FormInterface, FormPersistenceInterface, FormUpdateInterface } from '../../../domain/entities/form/form.js';
+import { formatDate } from '../../../utils/formatDate.js';
 
 export class FormsRepository implements FormRepositoryInterface {
   private dbGateway: IDatabaseGateway;

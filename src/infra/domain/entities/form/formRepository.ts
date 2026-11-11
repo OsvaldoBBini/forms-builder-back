@@ -1,4 +1,4 @@
-import { FormInterface, FormUpdateInterface, FormDomainInterface } from './form';
+import { type FormInterface, type FormUpdateInterface, type FormDomainInterface } from './form.js';
 
 export interface FormRepositoryInterface {
   getForms(companyId: string): Promise<FormDomainInterface[] | undefined>;

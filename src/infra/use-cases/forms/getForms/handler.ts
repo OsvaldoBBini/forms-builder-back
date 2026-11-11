@@ -1,8 +1,8 @@
-import { FormsRepository } from '../repository/formsRepository';
-import { GetFormsUseCase } from './use-case';
-import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { databaseGateway } from '../../../adapters/database';
+import { FormsRepository } from '../repository/formsRepository.js';
+import { GetFormsUseCase } from './use-case/index.js';
+import { missingCompanyIdMessage } from '../../../utils/missingCompanyIdMessage.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { databaseGateway } from '../../../adapters/database/index.js';
 
 export const handler = functionWrapper('getForms', async ({ event, logger }) => {
   const { companyId } = event.pathParameters || {};

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { authGateway } from '../../../adapters/auth';
-import { functionWrapper } from '../../../utils/functionWrapper';
+import { authGateway } from '../../../adapters/auth/index.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
 
 const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, {message: 'Refresh token is required.'})

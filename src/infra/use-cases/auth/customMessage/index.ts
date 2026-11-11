@@ -1,7 +1,7 @@
-import { CustomMessageTriggerEvent } from 'aws-lambda';
-import { singUpMessage } from './signupMessage';
-import { forgotPasswordMessage } from './forgotPasswordMessage';
-import { resendConfirmationCodeMessage } from './resendConfirmationCodeMessage';
+import type { CustomMessageTriggerEvent } from 'aws-lambda';
+import { singUpMessage } from './signUpMessage.js';
+import { forgotPasswordMessage } from './forgotPasswordMessage.js';
+import { resendConfirmationCodeMessage } from './resendConfirmationCodeMessage.js';
 
 export async function handler(event: CustomMessageTriggerEvent) {
 
@@ -12,7 +12,7 @@ export async function handler(event: CustomMessageTriggerEvent) {
   const frontUrl = `http://localhost:5173/new-password/${email}/${code}`;
  
   if (event.triggerSource === 'CustomMessage_SignUp') {
-    const { subject, emailMessage } = singUpMessage(name, code);
+    const { subject, emailMessage } = singUpMessage(name!, code);
     event.response.emailSubject = subject;
     event.response.emailMessage = emailMessage;
   }
@@ -24,11 +24,10 @@ export async function handler(event: CustomMessageTriggerEvent) {
   }
 
   if (event.triggerSource === 'CustomMessage_ResendCode') {
-    const { subject, emailMessage } = resendConfirmationCodeMessage(name, code);
+    const { subject, emailMessage } = resendConfirmationCodeMessage(name!, code);
     event.response.emailSubject = subject;
     event.response.emailMessage = emailMessage;
   }
 
   return event;
 }
-

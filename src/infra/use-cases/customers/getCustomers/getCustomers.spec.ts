@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { APIGatewayProxyEvent } from 'aws-lambda/trigger/api-gateway-proxy';
-import { handler } from './handler';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
+import { handler } from './handler.js';
 
 const { mockCustomerRepository } = vi.hoisted(() => ({
   mockCustomerRepository: {

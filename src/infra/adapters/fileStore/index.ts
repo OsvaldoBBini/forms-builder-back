@@ -1,4 +1,4 @@
-import { S3Gateway } from './s3';
+import { S3Gateway } from './s3.js';
 
 export interface FileStoreGatewayInterface {
   bucketName: string;

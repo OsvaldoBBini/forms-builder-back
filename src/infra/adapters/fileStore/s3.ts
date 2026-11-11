@@ -1,5 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { FileStoreGatewayInterface } from '.';
+import { type FileStoreGatewayInterface } from './index.js';
 
 export class S3Gateway implements FileStoreGatewayInterface {
 

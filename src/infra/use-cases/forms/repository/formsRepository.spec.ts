@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FormsRepository } from './formsRepository';
-import { FormInterface } from '../../../domain/entities/form/form';
+import { FormsRepository } from './formsRepository.js';
+import type { FormInterface } from '../../../domain/entities/form/form.js';
 
 describe('FormsRepository', () => {
   const companyId = 'company-123';

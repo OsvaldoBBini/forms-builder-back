@@ -10,7 +10,7 @@ import {
   InvalidPasswordException,
   NotAuthorizedException
 } from '@aws-sdk/client-cognito-identity-provider';
-import { ErrorManager, DatabaseError } from './errorManager';
+import { ErrorManager, DatabaseError } from './errorManager.js';
 
 const logger = new Logger({ serviceName: 'TestErrorManager' });
 const errorManager = new ErrorManager(logger);

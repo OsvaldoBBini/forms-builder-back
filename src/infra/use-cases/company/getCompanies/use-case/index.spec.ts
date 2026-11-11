@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GetCompaniesUseCase } from './index';
-import { CompanyRepositoryInterface } from '../../../../domain/entities/company/companyRepository';
-import { CompanyDomainInterface } from '../../../../domain/entities/company/company';
+import { GetCompaniesUseCase } from './index.js';
+import { type CompanyRepositoryInterface } from '../../../../domain/entities/company/companyRepository.js';
+import { type CompanyDomainInterface } from '../../../../domain/entities/company/company.js';
 
 describe('GetCompaniesUseCase', () => {
   const mockRepository: CompanyRepositoryInterface = {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CustomerRepository } from './customerRepository';
-import { CustomerInterface } from '../../../domain/entities/customer/customer';
+import { CustomerRepository } from './customerRepository.js';
+import type { CustomerInterface } from '../../../domain/entities/customer/customer.js';
 
 describe('CustomerRepository', () => {
   const mockDbGateway = {

@@ -1,8 +1,8 @@
 import z from 'zod';
-import { CustomerRepository } from '../repository/customerRepository';
-import { UpdateCustomerUseCase } from './use-case';
-import { functionWrapper } from '../../../utils/functionWrapper';
-import { databaseGateway } from '../../../adapters/database';
+import { CustomerRepository } from '../repository/customerRepository.js';
+import { UpdateCustomerUseCase } from './use-case/index.js';
+import { functionWrapper } from '../../../utils/functionWrapper.js';
+import { databaseGateway } from '../../../adapters/database/index.js';
 
 const updateCustomerSchema = z.object({
   email: z.email({message: 'Invalid email format.'}).nullable(),

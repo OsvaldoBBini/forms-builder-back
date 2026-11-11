@@ -1,5 +1,5 @@
-import { CompanyDomainInterface } from '../../../../domain/entities/company/company';
-import { CompanyRepositoryInterface } from '../../../../domain/entities/company/companyRepository';
+import { type CompanyDomainInterface } from '../../../../domain/entities/company/company.js';
+import { type CompanyRepositoryInterface } from '../../../../domain/entities/company/companyRepository.js';
 
 export class GetCompaniesUseCase {
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GetFormFieldsUseCase } from './index';
+import { GetFormFieldsUseCase } from './index.js';
 
 describe('GetFormFieldsUseCase', () => {
   const mockFileStoreGateway = {

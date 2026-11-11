@@ -1,6 +1,6 @@
 import { AdminGetUserCommand, CognitoIdentityProviderClient, ConfirmForgotPasswordCommand, ConfirmSignUpCommand, ForgotPasswordCommand, InitiateAuthCommand, ResendConfirmationCodeCommand, SignUpCommand } from '@aws-sdk/client-cognito-identity-provider';
-import { AuthGatewayInterface } from '../../domain/entities/adapters/auth/authGateway';
-import { AccessPayloadInterface, ChangePasswordInterface, ConfirmAccountInterface, SignInInterface, SignUpInterface, UserAttributesDomainInterface, UserAttributesPersistenceInterface } from '../../domain/entities/adapters/auth/auth';
+import { type AuthGatewayInterface } from '../../domain/entities/adapters/auth/authGateway.js';
+import { type AccessPayloadInterface, type ChangePasswordInterface, type ConfirmAccountInterface, type SignInInterface, type SignUpInterface, type UserAttributesDomainInterface, type UserAttributesPersistenceInterface } from '../../domain/entities/adapters/auth/auth.js';
 import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger({ serviceName: 'authGateway' });
