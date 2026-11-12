@@ -47,6 +47,7 @@ provider:
         - GET
         - POST
         - PUT
+        - PATCH
         - DELETE
         - OPTIONS
 
@@ -165,6 +166,15 @@ functions:
       - httpApi:
           path: /companies
           method: POST
+          authorizer: 
+            name: CognitoAuthorizer
+
+  update-default-company-service:
+    handler: src/infra/use-cases/company/createCompany/handler.handler
+    events:
+      - httpApi:
+          path: /companies/{companyId}
+          method: PATCH
           authorizer: 
             name: CognitoAuthorizer
   

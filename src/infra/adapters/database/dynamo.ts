@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, QueryCommand, PutCommand, UpdateCommand, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { type DatabaseGatewayInterface } from './index.js';
 
 type filterType = 'begins_with' | 'contains' | 'equals';
@@ -83,6 +83,25 @@ export class DynamoGateway implements DatabaseGatewayInterface<QueryFilters> {
 
     await this.dbClient.send(command);
   }
+
+  public async transactUpdate<T>(items: { keys: { pk: string; sk?: string }; updateValues: Partial<T> }[]): Promise<void> {
+    const transactItems = items.map((item) => ({
+      Update: {
+        TableName: this.tableName,
+        Key: { PK: item.keys.pk, SK: item.keys.sk },
+        UpdateExpression: this.updateExpression(Object.keys(item.updateValues)),
+        ExpressionAttributeNames: this.expressionAttributeNames(Object.keys(item.updateValues)),
+        ExpressionAttributeValues: this.expressionAttributeValues(Object.keys(item.updateValues), item.updateValues)
+      }
+    }));
+
+    const command = new TransactWriteCommand({
+      TransactItems: transactItems
+    });
+
+    await this.dbClient.send(command);
+  }
+
 }
 
 export const databaseGateway = new DynamoGateway('FormsBuilderTable');

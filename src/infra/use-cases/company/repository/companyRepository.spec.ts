@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CompanyRepository } from './companyRepository.js';
-import type { CompanyInterface } from '../../../domain/entities/company/company.js';
+import type { CompanyInterface, IUpdateDefaultCompany } from '../../../domain/entities/company/company.js';
 
 describe('CompanyRepository', () => {
   const mockUserId = 'user123';
@@ -9,6 +9,7 @@ describe('CompanyRepository', () => {
     get: vi.fn(),
     put: vi.fn(),
     update: vi.fn(),
+    transactUpdate: vi.fn(),
   };
 
   let repository: CompanyRepository;
@@ -93,5 +94,37 @@ describe('CompanyRepository', () => {
     mockDbGateway.query.mockRejectedValueOnce(new Error('Query error'));
 
     await expect(repository.getCompaniesByUserId(mockUserId)).rejects.toThrow('Query error');
+  });
+
+  it('should update the old and new default company in one transaction', async () => {
+    const updateData: IUpdateDefaultCompany = {
+      userId: mockUserId,
+      defaultCompanyId: 'company-old',
+      newDefaultCompanyId: 'company-new',
+    };
+    mockDbGateway.transactUpdate.mockResolvedValueOnce(undefined);
+
+    await repository.updateDefaultCompany(updateData);
+
+    expect(mockDbGateway.transactUpdate).toHaveBeenCalledWith([
+      {
+        keys: { pk: `USER#${mockUserId}`, sk: 'COMPANY#company-old' },
+        updateValues: { isDefault: false },
+      },
+      {
+        keys: { pk: `USER#${mockUserId}`, sk: 'COMPANY#company-new' },
+        updateValues: { isDefault: true },
+      },
+    ]);
+  });
+
+  it('should wrap database errors when updating the default company', async () => {
+    mockDbGateway.transactUpdate.mockRejectedValueOnce(new Error('Transaction failed'));
+
+    await expect(repository.updateDefaultCompany({
+      userId: mockUserId,
+      defaultCompanyId: 'company-old',
+      newDefaultCompanyId: 'company-new',
+    })).rejects.toThrow('Transaction failed');
   });
 });

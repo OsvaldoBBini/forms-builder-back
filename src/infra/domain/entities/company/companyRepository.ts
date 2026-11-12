@@ -1,6 +1,7 @@
-import { type CompanyDomainInterface, type CompanyInterface } from './company.js';
+import { type CompanyDomainInterface, type CompanyInterface, type IUpdateDefaultCompany } from './company.js';
 
 export interface CompanyRepositoryInterface {
   putCompany(companyData: CompanyInterface): Promise<CompanyDomainInterface>;
   getCompaniesByUserId(userId: string): Promise<CompanyDomainInterface[] | null>;
+  updateDefaultCompany(updateData: IUpdateDefaultCompany): Promise<void>;
 }

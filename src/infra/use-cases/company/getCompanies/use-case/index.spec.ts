@@ -7,6 +7,7 @@ describe('GetCompaniesUseCase', () => {
   const mockRepository: CompanyRepositoryInterface = {
     putCompany: vi.fn(),
     getCompaniesByUserId: vi.fn(),
+    updateDefaultCompany: vi.fn(),
   };
 
   beforeEach(() => {

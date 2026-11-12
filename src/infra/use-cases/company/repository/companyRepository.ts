@@ -1,6 +1,6 @@
 import { DatabaseError } from '../../../../errors/errorManager.js';
 import type { CompanyRepositoryInterface } from '../../../domain/entities/company/companyRepository.js';
-import type { CompanyDomainInterface, CompanyInterface, CompanyPersistenceInterface } from '../../../domain/entities/company/company.js';
+import type { CompanyDomainInterface, CompanyInterface, CompanyPersistenceInterface, IUpdateDefaultCompany } from '../../../domain/entities/company/company.js';
 import crypto from 'crypto';
 import { type IDatabaseGateway } from '../../../adapters/database/index.js';
 
@@ -47,6 +47,26 @@ export class CompanyRepository implements CompanyRepositoryInterface {
       };
       await this.dbGateway.put(item);
       return {...companyData, companyId};
+    }
+    catch (e) {
+      throw new DatabaseError(String(e));
+    }
+  }
+
+  async updateDefaultCompany(updateData: IUpdateDefaultCompany): Promise<void> {
+    try {
+      const itemsToUpdate = [
+        {
+          keys: { pk: `USER#${updateData.userId}`, sk: `COMPANY#${updateData.defaultCompanyId}` },
+          updateValues: { isDefault: false }
+        },
+        {
+          keys: { pk: `USER#${updateData.userId}`, sk: `COMPANY#${updateData.newDefaultCompanyId}` },
+          updateValues: { isDefault: true }
+        }
+      ];
+      await this.dbGateway.transactUpdate(itemsToUpdate);
+      return;
     }
     catch (e) {
       throw new DatabaseError(String(e));
