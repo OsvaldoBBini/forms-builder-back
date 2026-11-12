@@ -84,8 +84,11 @@ export class DynamoGateway implements DatabaseGatewayInterface<QueryFilters> {
     await this.dbClient.send(command);
   }
 
-  public async transactUpdate<T>(items: { keys: { pk: string; sk?: string }; updateValues: Partial<T> }[]): Promise<void> {
-    const transactItems = items.map((item) => ({
+  public async transact<T extends Record<string, any>>(
+    updates?: { keys: { pk: string; sk?: string }; updateValues: Partial<T> }[],
+    inserts?: { Item: T }[]
+  ): Promise<void> {
+    const transactItems = updates?.map((item) => ({
       Update: {
         TableName: this.tableName,
         Key: { PK: item.keys.pk, SK: item.keys.sk },
@@ -93,12 +96,18 @@ export class DynamoGateway implements DatabaseGatewayInterface<QueryFilters> {
         ExpressionAttributeNames: this.expressionAttributeNames(Object.keys(item.updateValues)),
         ExpressionAttributeValues: this.expressionAttributeValues(Object.keys(item.updateValues), item.updateValues)
       }
-    }));
+    })) ?? [];
+
+    const insertItems = inserts?.map((item) => ({
+      Put: {
+        TableName: this.tableName,
+        Item: {...item.Item}
+      }
+    })) ?? [];
 
     const command = new TransactWriteCommand({
-      TransactItems: transactItems
+      TransactItems: [...transactItems, ...insertItems]
     });
-
     await this.dbClient.send(command);
   }
 

@@ -1,10 +1,13 @@
 export interface CompanyInterface {
-  companyId?: string;
   cnpj: string; 
   userId: string;
   companyName: string;
   role: 'owner' | 'admin' | 'user';
   isDefault: boolean
+}
+
+export interface CompanyInterfaceCreate extends CompanyInterface {
+  defaultCompanyId: string | undefined;
 }
 
 export interface CompanyDomainInterface extends CompanyInterface {
@@ -16,12 +19,14 @@ export interface CompanyPersistenceInterface extends CompanyDomainInterface {
   SK: string;
 }
 
-export interface IUpdateDefaultCompanyInput {
+export interface CompanyUpdateInput {
   companyId: string;
   userId: string;
+  companyName: string;
+  cnpj: string;
+  isDefault: boolean;
 }
 
-export interface IUpdateDefaultCompany extends Omit<IUpdateDefaultCompanyInput, 'companyId'> {
-  newDefaultCompanyId: string;
-  defaultCompanyId: string;
+export interface CompanyUpdateCommand extends CompanyUpdateInput {
+  defaultCompanyId?: string;
 }

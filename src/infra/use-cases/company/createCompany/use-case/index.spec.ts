@@ -7,7 +7,7 @@ describe('CreateCompanyUseCase', () => {
   const mockRepository: CompanyRepositoryInterface = {
     putCompany: vi.fn(),
     getCompaniesByUserId: vi.fn(),
-    updateDefaultCompany: vi.fn(),
+    updateCompany: vi.fn(),
   };
 
   beforeEach(() => {
@@ -37,7 +37,10 @@ describe('CreateCompanyUseCase', () => {
     expect(result).toEqual(createdCompany);
     expect(mockRepository.getCompaniesByUserId).toHaveBeenCalledWith('user-1');
     expect(mockRepository.putCompany).toHaveBeenCalledTimes(1);
-    expect(mockRepository.putCompany).toHaveBeenCalledWith(companyData);
+    expect(mockRepository.putCompany).toHaveBeenCalledWith({
+      ...companyData,
+      defaultCompanyId: undefined,
+    });
   });
 
   it('should unset the old default company before creating a new default company', async () => {
@@ -65,17 +68,40 @@ describe('CreateCompanyUseCase', () => {
     };
 
     mockRepository.getCompaniesByUserId.mockResolvedValueOnce([existingCompany]);
-    mockRepository.putCompany
-      .mockResolvedValueOnce({ ...existingCompany, isDefault: false })
-      .mockResolvedValueOnce(createdCompany);
+    mockRepository.putCompany.mockResolvedValueOnce(createdCompany);
 
     const result = await useCase.execute(newCompanyData);
 
     expect(result).toEqual(createdCompany);
-    expect(mockRepository.putCompany).toHaveBeenNthCalledWith(1, {
-      ...existingCompany,
-      isDefault: false,
+    expect(mockRepository.getCompaniesByUserId).toHaveBeenCalledWith('user-1');
+    expect(mockRepository.putCompany).toHaveBeenCalledTimes(1);
+    expect(mockRepository.putCompany).toHaveBeenCalledWith({
+      ...newCompanyData,
+      defaultCompanyId: 'company-old',
     });
-    expect(mockRepository.putCompany).toHaveBeenNthCalledWith(2, newCompanyData);
+  });
+
+  it('should not look up existing companies when the new company is not default', async () => {
+    const useCase = new CreateCompanyUseCase(mockRepository);
+    const companyData = {
+      userId: 'user-1',
+      companyName: 'Acme',
+      cnpj: '11111111000191',
+      isDefault: false,
+      role: 'owner' as const,
+    };
+    const createdCompany: CompanyDomainInterface = {
+      ...companyData,
+      companyId: 'company-1',
+    };
+    mockRepository.putCompany.mockResolvedValueOnce(createdCompany);
+
+    await expect(useCase.execute(companyData)).resolves.toEqual(createdCompany);
+
+    expect(mockRepository.getCompaniesByUserId).not.toHaveBeenCalled();
+    expect(mockRepository.putCompany).toHaveBeenCalledWith({
+      ...companyData,
+      defaultCompanyId: undefined,
+    });
   });
 });

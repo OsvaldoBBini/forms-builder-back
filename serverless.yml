@@ -169,12 +169,12 @@ functions:
           authorizer: 
             name: CognitoAuthorizer
 
-  update-default-company-service:
-    handler: src/infra/use-cases/company/createCompany/handler.handler
+  update-company-service:
+    handler: src/infra/use-cases/company/updateCompany/handler.handler
     events:
       - httpApi:
           path: /companies/{companyId}
-          method: PATCH
+          method: PUT
           authorizer: 
             name: CognitoAuthorizer
   

@@ -10,14 +10,9 @@ export class CreateCompanyUseCase {
   }
 
   async execute(companyData: CompanyInterface): Promise<CompanyDomainInterface> {
-    if (companyData.isDefault === true) {
-      const companies = await this.companyRepository.getCompaniesByUserId(companyData.userId);
-      if (companies) {
-        const isDefaultCompany = companies.find((company: CompanyDomainInterface) => company.isDefault === true);
-        if (isDefaultCompany) await this.companyRepository.putCompany({...isDefaultCompany, isDefault: false});
-      }
-    }
-    const company = await this.companyRepository.putCompany(companyData);
+    const companies = companyData.isDefault === true ? await this.companyRepository.getCompaniesByUserId(companyData.userId) : undefined;
+    const defaultCompany = companies ? companies.find((company: CompanyDomainInterface) => company.isDefault === true) : undefined;
+    const company = await this.companyRepository.putCompany({...companyData, defaultCompanyId: defaultCompany?.companyId});
     return company;
   }
 }

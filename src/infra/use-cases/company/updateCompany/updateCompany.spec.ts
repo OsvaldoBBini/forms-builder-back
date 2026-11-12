@@ -6,7 +6,7 @@ const { mockCompanyRepository } = vi.hoisted(() => ({
   mockCompanyRepository: {
     putCompany: vi.fn(),
     getCompaniesByUserId: vi.fn(),
-    updateDefaultCompany: vi.fn(),
+    updateCompany: vi.fn(),
   },
 }));
 
@@ -14,16 +14,22 @@ vi.mock('../repository/companyRepository.js', () => ({
   CompanyRepository: vi.fn().mockImplementation(() => mockCompanyRepository),
 }));
 
-describe('updateDefaultCompany handler', () => {
+describe('updateCompany handler', () => {
   const mockUserId = 'user-123';
   const mockCompanyId = 'company-2';
+  const body = {
+    companyName: 'Acme Corporation',
+    cnpj: '11111111000191',
+    isDefault: true,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('updates the default company and returns the selected company id', async () => {
+  it('updates company details and returns the company id', async () => {
     const event = {
+      body: JSON.stringify(body),
       pathParameters: { companyId: mockCompanyId },
       requestContext: {
         authorizer: {
@@ -38,24 +44,24 @@ describe('updateDefaultCompany handler', () => {
       { companyId: 'company-1', isDefault: true },
       { companyId: mockCompanyId, isDefault: false },
     ]);
-    mockCompanyRepository.updateDefaultCompany.mockResolvedValueOnce(undefined);
+    mockCompanyRepository.updateCompany.mockResolvedValueOnce(undefined);
 
     const response = await handler(event);
 
-    expect(response.statusCode).toBe(201);
-    expect(JSON.parse(response.body)).toEqual({
-      data: { company: mockCompanyId },
-    });
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({ data: { company: mockCompanyId } });
     expect(mockCompanyRepository.getCompaniesByUserId).toHaveBeenCalledWith(mockUserId);
-    expect(mockCompanyRepository.updateDefaultCompany).toHaveBeenCalledWith({
+    expect(mockCompanyRepository.updateCompany).toHaveBeenCalledWith({
+      ...body,
+      companyId: mockCompanyId,
       userId: mockUserId,
       defaultCompanyId: 'company-1',
-      newDefaultCompanyId: mockCompanyId,
     });
   });
 
   it('returns an authorization error when the company id is missing', async () => {
     const event = {
+      body: JSON.stringify(body),
       pathParameters: {},
       requestContext: {
         authorizer: {
@@ -72,7 +78,25 @@ describe('updateDefaultCompany handler', () => {
     expect(JSON.parse(response.body)).toEqual({
       data: { message: 'Unauthorized: Missing company ID in path parameters.' },
     });
-    expect(mockCompanyRepository.getCompaniesByUserId).not.toHaveBeenCalled();
-    expect(mockCompanyRepository.updateDefaultCompany).not.toHaveBeenCalled();
+    expect(mockCompanyRepository.updateCompany).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid company data', async () => {
+    const event = {
+      body: JSON.stringify({ ...body, cnpj: 'invalid' }),
+      pathParameters: { companyId: mockCompanyId },
+      requestContext: {
+        authorizer: {
+          jwt: {
+            claims: { sub: mockUserId },
+          },
+        },
+      },
+    } as unknown as APIGatewayProxyEvent;
+
+    const response = await handler(event);
+
+    expect(response.statusCode).toBe(422);
+    expect(mockCompanyRepository.updateCompany).not.toHaveBeenCalled();
   });
 });
