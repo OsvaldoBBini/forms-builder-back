@@ -218,6 +218,17 @@ functions:
     environment:
       FIELDS_BUCKET: !Ref S3Bucket
 
+  update-form-fields-service:
+    handler: src/infra/use-cases/forms/updateFields/handler.handler
+    events:
+      - httpApi:
+          path: /companies/{companyId}/forms/{formId}/fields
+          method: PUT
+          authorizer: 
+            name: CognitoAuthorizer
+    environment:
+      FIELDS_BUCKET: !Ref S3Bucket
+
 resources:
   Resources:
 
