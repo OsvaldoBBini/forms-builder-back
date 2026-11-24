@@ -7,9 +7,7 @@ export interface FormInterface {
   fieldsAddress: string;
 }
 
-export interface FormUpdateInterface extends FormInterface{
-  formId: string;
-}
+export type FormUpdateInterface = Pick<FormInterface, 'companyId' | 'formId' | 'formName'>;
 
 export interface FormDomainInterface extends Omit<FormInterface, 'fieldsAddress'> {
   formId: string;
